@@ -1,0 +1,33 @@
+version: '3'
+services:
+  db:
+    image: postgres
+    environment:
+     - POSTGRES_DB=${POSTGRES_DB}
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - 5432
+  test_db:
+    image: postgres
+    environment:
+     - POSTGRES_DB=${POSTGRES_DB}
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - 5432
+  web:
+    build: 
+      context: .
+    volumes:
+     - ./src:/app
+    environment:
+     - PORT=${PORT}
+     - POSTGRES_HOST=db
+     - POSTGRES_DB=${POSTGRES_DB}
+     - POSTGRES_USER=${POSTGRES_USER}
+     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+     - POSTGRES_PORT=${POSTGRES_PORT}
+     - POSTGRES_TEST_HOST=test_db
+    ports:
+      - "3030:3001"

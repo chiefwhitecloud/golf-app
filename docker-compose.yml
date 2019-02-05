@@ -17,7 +17,7 @@ services:
     ports:
       - 5432
   web:
-    build: 
+    build:
       context: .
     volumes:
      - ./src:/app
@@ -31,3 +31,6 @@ services:
      - POSTGRES_TEST_HOST=test_db
     ports:
       - "3030:3001"
+    links:
+      - db
+      - test_db

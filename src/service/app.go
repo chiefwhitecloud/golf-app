@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/chiefwhitecloud/golf-app/database"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"log"
@@ -43,6 +44,14 @@ func (a *App) Run(port string) {
 
 func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/import", a.handleCreateNewGame()).Methods("POST")
+	a.Router.HandleFunc("/feeds/default/scoresheet", a.handleGetScoresheet()).Methods("POST")
+}
+
+func (a *App) CreateTables() {
+	err := database.CreateTables(a.DB)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func (a *App) databaseConnectionTest() error {

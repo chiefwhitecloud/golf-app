@@ -5,15 +5,15 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type game struct {
+type player struct {
 	ID   int
 	Name string
 }
 
-func (g *game) createGame(db *sql.DB, name string) error {
+func (p *player) createPlayer(db *sql.DB) error {
 	err := db.QueryRow(
-		"INSERT INTO game(name) VALUES($1) RETURNING id",
-		g.Name).Scan(&g.ID)
+		"INSERT INTO player(name) VALUES($1) RETURNING id",
+		p.Name).Scan(&p.ID)
 
 	if err != nil {
 		return err

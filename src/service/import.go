@@ -37,6 +37,12 @@ func (a *App) handleCreateNewGame() http.HandlerFunc {
 
 		err = database.CreateNewGame(a.DB, dataimport)
 
+		if err != nil {
+			http.Error(w, "Failed to create game", http.StatusInternalServerError)
+			log.Println(err.Error())
+			return
+		}
+
 		respondWithStatus(w, http.StatusCreated)
 
 		return

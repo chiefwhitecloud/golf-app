@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"github.com/chiefwhitecloud/golf-app/service"
+	"os"
 )
 
 func main() {

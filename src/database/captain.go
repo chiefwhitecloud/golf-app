@@ -22,3 +22,27 @@ func (c *captain) createCaptain(db *sql.DB) error {
 
 	return nil
 }
+
+func getCaptains(db *sql.DB, gameId int) ([]captain, error) {
+	rows, err := db.Query(
+    "SELECT id, name, game_id FROM captain WHERE game_id = $1",
+    gameId)
+
+  if err != nil {
+      return nil, err
+  }
+
+  defer rows.Close()
+
+  captains := []captain{}
+
+  for rows.Next() {
+      var c captain
+      if err := rows.Scan(&c.ID, &c.Name, &c.GameID); err != nil {
+          return nil, err
+      }
+      captains = append(captains, c)
+  }
+
+  return captains, nil
+}

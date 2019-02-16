@@ -18,8 +18,8 @@ const tableCreationQuery = `
 
 DROP TABLE IF EXISTS hole;
 DROP TABLE IF EXISTS course;
-DROP TABLE IF EXISTS matchup;
 DROP TABLE IF EXISTS pairing;
+DROP TABLE IF EXISTS matchup;
 DROP TABLE IF EXISTS player;
 DROP TABLE IF EXISTS captain;
 DROP TABLE IF EXISTS game;
@@ -56,18 +56,18 @@ CREATE TABLE player (
  	name VARCHAR (50) NOT NULL
 );
 
+CREATE TABLE matchup (
+ 	id serial PRIMARY KEY,
+ 	name VARCHAR (50) NOT NULL,
+ 	game_id INT REFERENCES game(id)
+);
+
 CREATE TABLE pairing (
  	id serial PRIMARY KEY,
  	player1_id INT REFERENCES player(id),
   player2_id INT REFERENCES player(id),
-	captain_id INT REFERENCES captain(id)
+	captain_id INT REFERENCES captain(id),
+	matchup_id INT REFERENCES matchup(id)
 );
 
-CREATE TABLE matchup (
- 	id serial PRIMARY KEY,
- 	name VARCHAR (50) NOT NULL,
- 	pairing1_id INT REFERENCES pairing(id),
-  pairing2_id INT REFERENCES pairing(id),
- 	game_id INT REFERENCES game(id)
-);
 `

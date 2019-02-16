@@ -66,6 +66,8 @@ func CreateNewGame(db *sql.DB, importData api.DataImport) error {
 			GameID: game.ID,
 		}
 
+		matchupDB.createMatchup(db)
+
 		for x := 0; x < 2; x++ {
 			pair := matchupImport.Pairs[x]
 
@@ -74,6 +76,7 @@ func CreateNewGame(db *sql.DB, importData api.DataImport) error {
 				return err
 			}
 			pa := pairing{
+				MatchupID: matchupDB.ID,
 				CaptainID: capt.ID,
 			}
 			for y := 0; y < 2; y++ {
@@ -93,11 +96,6 @@ func CreateNewGame(db *sql.DB, importData api.DataImport) error {
 			err = pa.createPairing(db)
 			if err != nil {
 				return err
-			}
-			if x == 0 {
-				matchupDB.Pairing1ID = pa.ID
-			} else if x == 1 {
-				matchupDB.Pairing2ID = pa.ID
 			}
 		}
 	}

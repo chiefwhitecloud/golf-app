@@ -111,6 +111,26 @@ func TestSimpleScoresheet(t *testing.T) {
 		}
 	}
 
+	scoresheet := gjson.Get(json, "scoresheet")
+
+	if !scoresheet.Exists() {
+    t.Errorf("Expected scoresheet key to exist")
+  }
+
+	matchups := gjson.Get(json, "scoresheet.matchups")
+
+	if !matchups.Exists() {
+    t.Errorf("Expected scoresheet.matchups key to exist")
+  }
+
+	if gjson.Get(json, "scoresheet.matchups.#").Int() != 1 {
+    t.Errorf("Expected scoresheet.matchups length to be 1")
+  }
+
+	if gjson.Get(json, "scoresheet.matchups.0.name").String() != "Group 1" {
+    t.Errorf("Expected scoresheet.matchups name to be Group 1")
+  }
+
 }
 
 func createTables() {

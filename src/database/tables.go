@@ -16,6 +16,7 @@ func CreateTables(db *sql.DB) error {
 
 const tableCreationQuery = `
 
+DROP TABLE IF EXISTS score;
 DROP TABLE IF EXISTS hole;
 DROP TABLE IF EXISTS course;
 DROP TABLE IF EXISTS pairing;
@@ -68,6 +69,16 @@ CREATE TABLE pairing (
   player2_id INT REFERENCES player(id),
 	captain_id INT REFERENCES captain(id),
 	matchup_id INT REFERENCES matchup(id)
+);
+
+CREATE TABLE score (
+ id serial PRIMARY KEY,
+ hole_id INT REFERENCES hole(id),
+ pairing1_id INT REFERENCES pairing(id),
+ pairing1_strokes INT,
+ pairing2_id INT REFERENCES pairing(id),
+ pairing2_strokes INT,
+ matchup_id INT REFERENCES matchup(id)
 );
 
 `

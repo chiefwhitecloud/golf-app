@@ -1,12 +1,15 @@
 package api
 
 type PairScoreInfo struct {
+	Name string `json:"name"`
+	Captain string `json:"captainName"`
 	HolesWon int `json:"holesWon"`
 }
 
-type GroupScoreInfo struct {
+type MatchupScoreInfo struct {
 	Name string `json:"name"`
-  Pairs map[string]PairScoreInfo `json:"pairs"`
+  Pair1 PairScoreInfo `json:"pair1"`
+	Pair2 PairScoreInfo `json:"pair2"`
   LastHolePlayed string `json:"lastHolePlayed"`
   SelfPath string `json:"selfPath"`
 }
@@ -21,7 +24,7 @@ type OverallScoreInfo struct {
 
 type ScoreInfo struct {
 	Overall OverallScoreInfo `json:"overall"`
-  Groups GroupScoreInfo `json:"groups"`
+  Matchups []MatchupScoreInfo `json:"matchups"`
   holesToBePlayed int `json:"holesToBePlayed"`
   totalNumOfHoles int `json:"totalNumOfHoles"`
 }

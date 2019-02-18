@@ -37,7 +37,24 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
     }
 	}
 
-  scoresheet.PairingsList = pairingList
+	scoresheet.PairingsList = pairingList
+
+	matchups, err := getMatchups(db, gameId);
+  if err != nil {
+    return scoresheet, err
+  }
+
+	matchupScoreInfos := make([]api.MatchupScoreInfo, len(matchups))
+
+	for i := range matchups {
+		matchupScoreInfos[i].Name = matchups[i].Name
+	}
+
+	scoreInfo := api.ScoreInfo{}
+
+	scoreInfo.Matchups = matchupScoreInfos
+
+	scoresheet.Score = scoreInfo
 
   return scoresheet, nil;
 

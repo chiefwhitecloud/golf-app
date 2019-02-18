@@ -22,3 +22,31 @@ func (m *matchup) createMatchup(db *sql.DB) error {
 
 	return nil
 }
+
+func getMatchups(db *sql.DB, gameId int) ([]matchup, error) {
+	rows, err := db.Query(`
+		SELECT m.id matchup_id,
+			m.name
+		FROM matchup m
+  	WHERE
+  		m.game_id = $1;`,
+    gameId)
+
+  if err != nil {
+      return nil, err
+  }
+
+  defer rows.Close()
+
+  matchups := []matchup{}
+
+  for rows.Next() {
+      var m matchup
+      if err := rows.Scan(&m.ID, &m.Name); err != nil {
+          return nil, err
+      }
+      matchups = append(matchups, m)
+  }
+
+  return matchups, nil
+}

@@ -80,37 +80,6 @@ func TestSimpleScoresheet(t *testing.T) {
 		t.Errorf("Expected captain chief to exist")
 	}
 
-	pairingIdent := gjson.Get(json, "pairingIdent")
-	if !pairingIdent.Exists() {
-		t.Errorf("Expected pairingIdent key to exist")
-	}
-
-	mPairs, ok := gjson.Parse(pairingIdent.String()).Value().(map[string]interface{})
-	if !ok {
-		t.Errorf("Expected pairingIdent to be a map")
-	}
-
-	if (len(mPairs) != 2){
-		t.Errorf("Expected pairingIdent to have 2 keys")
-	}
-
-	pairingExistsValidation := map[string]bool {
-    "White / Campbell": false,
-    "Drover / Rogers": false,
-	}
-
-	pairingIdent.ForEach(func(key, value gjson.Result) bool {
-		name := gjson.Parse(value.String()).Get("name").String()
-		pairingExistsValidation[name] = true;
-		return true // keep iterating
-	})
-
-	for k, _ := range pairingExistsValidation {
-    if (pairingExistsValidation[k] == false){
-			t.Errorf("Pairing not found")
-		}
-	}
-
 	scoresheet := gjson.Get(json, "scoresheet")
 
 	if !scoresheet.Exists() {
@@ -130,6 +99,40 @@ func TestSimpleScoresheet(t *testing.T) {
 	if gjson.Get(json, "scoresheet.matchups.0.name").String() != "Group 1" {
     t.Errorf("Expected scoresheet.matchups name to be Group 1")
   }
+
+	if gjson.Get(json, "scoresheet.matchups.0.holeNumberLastPlayed").Int() != 0 {
+		t.Errorf("Expected scoresheet.matchups.0.holeNumberLastPlayed to be 0")
+	}
+
+	if gjson.Get(json, "scoresheet.matchups.0.pairings.#").Int() != 2 {
+    t.Errorf("Expected scoresheet.matchups.0.pairings length to be 2")
+  }
+
+	pairingExistsValidation := map[string]bool {
+    "White / Campbell": false,
+    "Drover / Rogers": false,
+	}
+
+	pairingNamesResult := gjson.Get(json, "scoresheet.matchups.0.pairings.#.name")
+	for _, name := range pairingNamesResult.Array() {
+		pairingExistsValidation[name.String()] = true;
+	}
+
+	for k, _ := range pairingExistsValidation {
+    if (pairingExistsValidation[k] == false){
+			t.Errorf("Pairing not found")
+		}
+	}
+
+	if gjson.Get(json, "scoresheet.matchups.0.pairings.0.holesWon").Int() != 0 {
+    t.Errorf("Expected scoresheet.matchups.0.pairings.0.holesWon to be 0")
+  }
+
+	if gjson.Get(json, "scoresheet.matchups.0.pairings.1.holesWon").Int() != 0 {
+    t.Errorf("Expected scoresheet.matchups.0.pairings.1.holesWon to be 0")
+  }
+
+
 
 }
 

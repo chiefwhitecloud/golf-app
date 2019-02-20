@@ -27,7 +27,7 @@ func (p *pairing) createPairing(db *sql.DB) error {
 	return nil
 }
 
-func getPairings(db *sql.DB, gameId int) ([]pairing, error) {
+func getPairingsForMatchup(db *sql.DB, matchupId int) ([]pairing, error) {
 	rows, err := db.Query(`
 		SELECT p.id pairing_id,
 			pl1.id player1_id,
@@ -43,8 +43,8 @@ func getPairings(db *sql.DB, gameId int) ([]pairing, error) {
     	inner join player pl2
     		on pl2.id = p.player2_id
     	WHERE
-    		m.game_id = $1;`,
-    gameId)
+    		m.id = $1;`,
+    matchupId)
 
   if err != nil {
       return nil, err

@@ -1,16 +1,16 @@
 package api
 
-type PairScoreInfo struct {
+type PairingScoreInfo struct {
+	ID string `json:"id"`
 	Name string `json:"name"`
-	Captain string `json:"captainName"`
+	CaptainID string `json:"captainId"`
 	HolesWon int `json:"holesWon"`
 }
 
 type MatchupScoreInfo struct {
 	Name string `json:"name"`
-  Pair1 PairScoreInfo `json:"pair1"`
-	Pair2 PairScoreInfo `json:"pair2"`
-  LastHolePlayed string `json:"lastHolePlayed"`
+  Pairings []PairingScoreInfo `json:"pairings"`
+  HoleNumberLastPlayed int `json:"holeNumberLastPlayed"`
   SelfPath string `json:"selfPath"`
 }
 
@@ -33,13 +33,7 @@ type CaptainIndent struct {
 	Name string `json:"name"`
 }
 
-type PairingIndent struct {
-	Name string `json:"name"`
-  CaptainID string `json:"captainId"`
-}
-
 type Scoresheet struct {
 	Score ScoreInfo `json:"scoresheet"`
-  PairingsList map[string]PairingIndent `json:"pairingIdent"`
   CaptainsList map[string]CaptainIndent `json:"captainIdent"`
 }

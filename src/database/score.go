@@ -13,7 +13,7 @@ type score struct {
   MatchupID int
   Pairing1Strokes int
   Pairing2Strokes int
-	Name string
+	HoleNumber int
 }
 
 func (s *score) createScore(db *sql.DB) error {
@@ -31,21 +31,22 @@ func (s *score) createScore(db *sql.DB) error {
 	return nil
 }
 
-func getScores(db *sql.DB, gameId int) ([]score, error) {
+func getScoresForMatchup(db *sql.DB, matchupId int) ([]score, error) {
 	rows, err := db.Query(`
 		SELECT
       s.id score_id,
+			s.hole_id,
+			h.number,
 			s.pairing1_id,
       s.pairing1_strokes,
 			s.pairing2_id,
-      s.pairing2_strokes,
-			s.matchup_id
+      s.pairing2_strokes
 		FROM score s
- 			inner join matchup m
-    		on s.matchup_id = m.id
-    	WHERE
-    		m.game_id = $1;`,
-    gameId)
+			inner join hole h
+				on s.hole_id = h.id
+    WHERE
+    	s.matchup_id = $1;`,
+    matchupId)
 
   if err != nil {
       return nil, err
@@ -58,15 +59,52 @@ func getScores(db *sql.DB, gameId int) ([]score, error) {
   for rows.Next() {
       var s score
       if err := rows.Scan(&s.ID,
+				&s.HoleID,
+				&s.HoleNumber,
 				&s.Pairing1ID,
 				&s.Pairing1Strokes,
 				&s.Pairing1ID,
 				&s.Pairing2Strokes,
-				&s.MatchupID); err != nil {
+			); err != nil {
           return nil, err
       }
       scores = append(scores, s)
   }
 
   return scores, nil
+}
+
+
+func getTotalHolesWonByPairing(pairingId int, scoresForMatchup []score) int {
+
+	holesWon := 0
+
+	for i := 0; i < len(scoresForMatchup); i++ {
+		if (pairingId == scoresForMatchup[i].Pairing1ID){
+			if (scoresForMatchup[i].Pairing1Strokes < scoresForMatchup[i].Pairing2Strokes){
+				holesWon++
+			}
+		} else if (pairingId == scoresForMatchup[i].Pairing2ID) {
+			if (scoresForMatchup[i].Pairing2Strokes < scoresForMatchup[i].Pairing1Strokes){
+				holesWon++
+			}
+		}
+	}
+
+	return holesWon
+}
+
+func getHoleLastPlayedForMatchup(matchupId int, scoresForMatchup []score) int {
+
+	lastHolePlayed := 0
+
+	for i := 0; i < len(scoresForMatchup); i++ {
+		if (scoresForMatchup[i].MatchupID == matchupId){
+			if (scoresForMatchup[i].HoleNumber > lastHolePlayed){
+				lastHolePlayed = scoresForMatchup[i].HoleNumber
+			}
+		}
+	}
+
+	return lastHolePlayed
 }

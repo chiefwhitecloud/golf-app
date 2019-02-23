@@ -86,6 +86,23 @@ func TestSimpleScoresheet(t *testing.T) {
     t.Errorf("Expected scoresheet key to exist")
   }
 
+
+	totalNumOfHoles := gjson.Get(json, "scoresheet.totalNumOfHoles")
+	if !totalNumOfHoles.Exists() {
+    t.Errorf("Expected scoresheet.totalNumOfHoles key to exist")
+  }
+	if gjson.Get(json, "scoresheet.totalNumOfHoles").Int() != 3 {
+		t.Errorf("Expected scoresheet.totalNumOfHoles to be 3")
+	}
+
+	numOfHolesRemaining := gjson.Get(json, "scoresheet.numOfHolesRemaining")
+	if !numOfHolesRemaining.Exists() {
+    t.Errorf("Expected scoresheet.numOfHolesRemaining key to exist")
+  }
+	if gjson.Get(json, "scoresheet.numOfHolesRemaining").Int() != 3 {
+		t.Errorf("Expected scoresheet.numOfHolesRemaining to be 3")
+	}
+
 	matchups := gjson.Get(json, "scoresheet.matchups")
 
 	if !matchups.Exists() {

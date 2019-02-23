@@ -4,29 +4,26 @@ type PairingScoreInfo struct {
 	ID string `json:"id"`
 	Name string `json:"name"`
 	CaptainID string `json:"captainId"`
-	HolesWon int `json:"holesWon"`
+	TotalHolesWon int `json:"totalHolesWon"`
 }
 
 type MatchupScoreInfo struct {
 	Name string `json:"name"`
   Pairings []PairingScoreInfo `json:"pairings"`
   HoleNumberLastPlayed int `json:"holeNumberLastPlayed"`
+	LeaderPairingID string `json:"LeaderPairingId"`
   SelfPath string `json:"selfPath"`
 }
 
 type CaptainScores struct {
-  HolesWon string `json:"holesWon"`
-}
-
-type OverallScoreInfo struct {
-	Captains map[string]CaptainScores `json:"captains"`
+  TotalHolesWon string `json:"totalHolesWon"`
 }
 
 type ScoreInfo struct {
-	Overall OverallScoreInfo `json:"overall"`
+	Captains map[string]CaptainScores `json:"captains"`
   Matchups []MatchupScoreInfo `json:"matchups"`
-  holesToBePlayed int `json:"holesToBePlayed"`
-  totalNumOfHoles int `json:"totalNumOfHoles"`
+  NumOfHolesRemaining int `json:"numOfHolesRemaining"`
+  TotalNumOfHoles int `json:"totalNumOfHoles"`
 }
 
 type CaptainIndent struct {

@@ -24,3 +24,24 @@ func (h *hole) createHole(db *sql.DB) error {
 
 	return nil
 }
+
+func getHoleCount(db *sql.DB, gameId int) (int, error) {
+
+	var count int
+
+	row := db.QueryRow(`
+		SELECT COUNT(h.id)
+		FROM hole h
+		INNER JOIN course c
+			ON c.id = h.course_id
+  	WHERE
+			c.game_id = $1;`,
+    gameId)
+
+	err := row.Scan(&count)
+	if err != nil {
+		return count, err
+	}
+
+  return count, nil
+}

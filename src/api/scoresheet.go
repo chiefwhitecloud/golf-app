@@ -16,7 +16,7 @@ type MatchupScoreInfo struct {
 }
 
 type CaptainScores struct {
-  TotalHolesWon string `json:"totalHolesWon"`
+  TotalHolesWon int `json:"totalHolesWon"`
 }
 
 type ScoreInfo struct {

@@ -29,7 +29,9 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 
 	matchupScoreInfos := make([]api.MatchupScoreInfo, len(matchups))
 
-	var totalHolesPlayed int;
+	var totalHolesPlayed int
+
+	holesWonByCaptainID := make(map[string]int)
 
 	for i := range matchups {
 
@@ -50,6 +52,8 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 		for x := range pairingsForMatchup {
 
 			totalHolesWon := getTotalHolesWonByPairing(pairingsForMatchup[x].ID, scoresForMatchup)
+
+			holesWonByCaptainID[strconv.Itoa(pairingsForMatchup[x].CaptainID)] += totalHolesWon
 
 			pairingScoreInfos[x] = api.PairingScoreInfo{
 				 ID: strconv.Itoa(pairingsForMatchup[x].ID),
@@ -75,13 +79,17 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 		return scoresheet, err
 	}
 
+	captainScores := make(map[string]api.CaptainScores)
+	for k, v := range holesWonByCaptainID {
+    captainScores[k] = api.CaptainScores{TotalHolesWon: v}
+	}
+
 	scoreInfo := api.ScoreInfo{}
+	scoreInfo.Captains = captainScores
 	scoreInfo.Matchups = matchupScoreInfos
 	scoreInfo.TotalNumOfHoles = holeCount
 	scoreInfo.NumOfHolesRemaining = holeCount - totalHolesPlayed
-
 	scoresheet.Score = scoreInfo
-
 	scoresheet.CaptainsList = captainsList
 
   return scoresheet, nil;

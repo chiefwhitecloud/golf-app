@@ -1,11 +1,11 @@
 package service
 
 import (
-	"net/http"
-	"github.com/chiefwhitecloud/golf-app/database"
-	"log"
 	"fmt"
 	"github.com/chiefwhitecloud/golf-app/api"
+	"github.com/chiefwhitecloud/golf-app/database"
+	"log"
+	"net/http"
 )
 
 func (a *App) handleGetScoresheet() http.HandlerFunc {
@@ -23,11 +23,10 @@ func (a *App) handleGetScoresheet() http.HandlerFunc {
 				r.Host, scoreSheetResult.Score.Matchups[i].SelfPath)
 		}
 
- 		respondWithJSON(w, http.StatusOK, scoreSheetResult)
+		respondWithJSON(w, http.StatusOK, scoreSheetResult)
 
 	}
 }
-
 
 func (a *App) handleGetMatchupScoresheet() http.HandlerFunc {
 

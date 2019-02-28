@@ -6,9 +6,9 @@ import (
 )
 
 type matchup struct {
-	ID         int
-	Name       string
-	GameID     int
+	ID     int
+	Name   string
+	GameID int
 }
 
 func (m *matchup) createMatchup(db *sql.DB) error {
@@ -30,13 +30,13 @@ func (m *matchup) getMatchup(db *sql.DB) error {
 		FROM matchup m
   	WHERE
 			m.id = $1;`,
-    m.ID)
+		m.ID)
 
 	if err := row.Scan(&m.Name, &m.GameID); err != nil {
 		return err
 	}
 
-  return nil
+	return nil
 }
 
 func getMatchups(db *sql.DB, gameId int) ([]matchup, error) {
@@ -46,23 +46,23 @@ func getMatchups(db *sql.DB, gameId int) ([]matchup, error) {
 		FROM matchup m
   	WHERE
   		m.game_id = $1;`,
-    gameId)
+		gameId)
 
-  if err != nil {
-      return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
-  defer rows.Close()
+	defer rows.Close()
 
-  matchups := []matchup{}
+	matchups := []matchup{}
 
-  for rows.Next() {
-      var m matchup
-      if err := rows.Scan(&m.ID, &m.Name); err != nil {
-          return nil, err
-      }
-      matchups = append(matchups, m)
-  }
+	for rows.Next() {
+		var m matchup
+		if err := rows.Scan(&m.ID, &m.Name); err != nil {
+			return nil, err
+		}
+		matchups = append(matchups, m)
+	}
 
-  return matchups, nil
+	return matchups, nil
 }

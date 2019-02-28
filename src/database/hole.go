@@ -35,25 +35,25 @@ func getHoles(db *sql.DB, gameId int) ([]hole, error) {
 			g.id = c.game_id
 		WHERE g.id = $1
 		ORDER BY h.number ASC`,
-    gameId)
+		gameId)
 
-  if err != nil {
-      return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
-  defer rows.Close()
+	defer rows.Close()
 
-  holes := []hole{}
+	holes := []hole{}
 
-  for rows.Next() {
-      var h hole
-      if err := rows.Scan(&h.ID, &h.Number, &h.Par, &h.Yards, &h.CourseID); err != nil {
-          return nil, err
-      }
-      holes = append(holes, h)
-  }
+	for rows.Next() {
+		var h hole
+		if err := rows.Scan(&h.ID, &h.Number, &h.Par, &h.Yards, &h.CourseID); err != nil {
+			return nil, err
+		}
+		holes = append(holes, h)
+	}
 
-  return holes, nil
+	return holes, nil
 }
 
 func getHoleCount(db *sql.DB, gameId int) (int, error) {
@@ -67,12 +67,12 @@ func getHoleCount(db *sql.DB, gameId int) (int, error) {
 			ON c.id = h.course_id
   	WHERE
 			c.game_id = $1;`,
-    gameId)
+		gameId)
 
 	err := row.Scan(&count)
 	if err != nil {
 		return count, err
 	}
 
-  return count, nil
+	return count, nil
 }

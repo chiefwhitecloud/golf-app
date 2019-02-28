@@ -6,11 +6,11 @@ import (
 )
 
 type pairing struct {
-	ID        int
-	Player1ID int
-	Player2ID int
-	CaptainID int
-	MatchupID int
+	ID          int
+	Player1ID   int
+	Player2ID   int
+	CaptainID   int
+	MatchupID   int
 	Player1Name string
 	Player2Name string
 }
@@ -44,23 +44,23 @@ func getPairingsForMatchup(db *sql.DB, matchupId int) ([]pairing, error) {
     		on pl2.id = p.player2_id
     	WHERE
     		m.id = $1;`,
-    matchupId)
+		matchupId)
 
-  if err != nil {
-      return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
-  defer rows.Close()
+	defer rows.Close()
 
-  pairings := []pairing{}
+	pairings := []pairing{}
 
-  for rows.Next() {
-      var p pairing
-      if err := rows.Scan(&p.ID, &p.Player1ID, &p.Player1Name, &p.Player2ID, &p.Player2Name, &p.CaptainID); err != nil {
-          return nil, err
-      }
-      pairings = append(pairings, p)
-  }
+	for rows.Next() {
+		var p pairing
+		if err := rows.Scan(&p.ID, &p.Player1ID, &p.Player1Name, &p.Player2ID, &p.Player2Name, &p.CaptainID); err != nil {
+			return nil, err
+		}
+		pairings = append(pairings, p)
+	}
 
-  return pairings, nil
+	return pairings, nil
 }

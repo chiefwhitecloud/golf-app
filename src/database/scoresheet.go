@@ -2,30 +2,30 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/chiefwhitecloud/golf-app/api"
 	_ "github.com/lib/pq"
-  "strconv"
-  "fmt"
+	"strconv"
 )
 
 func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 
-  scoresheet := api.Scoresheet{}
+	scoresheet := api.Scoresheet{}
 
-  captains, err := getCaptains(db, gameId);
-  if err != nil {
-      return scoresheet, err
-  }
+	captains, err := getCaptains(db, gameId)
+	if err != nil {
+		return scoresheet, err
+	}
 
-  captainsList := map[string]api.CaptainIndent{}
+	captainsList := map[string]api.CaptainIndent{}
 	for i := range captains {
 		captainsList[strconv.Itoa(captains[i].ID)] = api.CaptainIndent{Name: captains[i].Name}
 	}
 
-	matchups, err := getMatchups(db, gameId);
-  if err != nil {
-    return scoresheet, err
-  }
+	matchups, err := getMatchups(db, gameId)
+	if err != nil {
+		return scoresheet, err
+	}
 
 	matchupScoreInfos := make([]api.MatchupScoreInfo, len(matchups))
 
@@ -43,8 +43,6 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 		matchupScoreInfos[i] = matchupScoreInfo
 	}
 
-
-
 	holeCount, err := getHoleCount(db, gameId)
 	if err != nil {
 		return scoresheet, err
@@ -52,7 +50,7 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 
 	captainScores := make(map[string]api.CaptainScores)
 	for k, v := range holesWonByCaptainID {
-    captainScores[k] = api.CaptainScores{TotalHolesWon: v}
+		captainScores[k] = api.CaptainScores{TotalHolesWon: v}
 	}
 
 	scoreInfo := api.ScoreInfo{}
@@ -63,7 +61,7 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 	scoresheet.Score = scoreInfo
 	scoresheet.CaptainsList = captainsList
 
-  return scoresheet, nil;
+	return scoresheet, nil
 
 }
 
@@ -83,7 +81,7 @@ func PopulateMatchupScoresheet(db *sql.DB, matchupID int, gameId int) (api.Match
 		return matchupScoreInfo, err
 	}
 
-	holes, err := getHoles(db, gameId);
+	holes, err := getHoles(db, gameId)
 	if err := matchup.getMatchup(db); err != nil {
 		return matchupScoreInfo, err
 	}
@@ -93,8 +91,8 @@ func PopulateMatchupScoresheet(db *sql.DB, matchupID int, gameId int) (api.Match
 	for i := range holes {
 		holeInfos[i] = api.HoleInfo{
 			HoleNumber: holes[i].Number,
-			HoleYards: holes[i].Yards,
-			HolePar: holes[i].Par,
+			HoleYards:  holes[i].Yards,
+			HolePar:    holes[i].Par,
 		}
 	}
 
@@ -108,12 +106,12 @@ func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (ap
 
 	matchupScoreInfo := api.MatchupScoreInfo{}
 
-	pairingsForMatchup, err := getPairingsForMatchup(db, matchupID);
+	pairingsForMatchup, err := getPairingsForMatchup(db, matchupID)
 	if err != nil {
 		return matchupScoreInfo, err
 	}
 
-	scoresForMatchup, err := getScoresForMatchup(db, matchupID);
+	scoresForMatchup, err := getScoresForMatchup(db, matchupID)
 	if err != nil {
 		return matchupScoreInfo, err
 	}
@@ -125,16 +123,16 @@ func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (ap
 		totalHolesWon := getTotalHolesWonByPairing(pairingsForMatchup[x].ID, scoresForMatchup)
 
 		pairingScoreInfos[x] = api.PairingScoreInfo{
-			 ID: strconv.Itoa(pairingsForMatchup[x].ID),
-			 Name: fmt.Sprintf("%s / %s", pairingsForMatchup[x].Player1Name, pairingsForMatchup[x].Player2Name),
-			 CaptainID: strconv.Itoa(pairingsForMatchup[x].CaptainID),
-			 TotalHolesWon: totalHolesWon,
+			ID:            strconv.Itoa(pairingsForMatchup[x].ID),
+			Name:          fmt.Sprintf("%s / %s", pairingsForMatchup[x].Player1Name, pairingsForMatchup[x].Player2Name),
+			CaptainID:     strconv.Itoa(pairingsForMatchup[x].CaptainID),
+			TotalHolesWon: totalHolesWon,
 		}
 	}
 
-	if (pairingScoreInfos[0].TotalHolesWon > pairingScoreInfos[1].TotalHolesWon){
+	if pairingScoreInfos[0].TotalHolesWon > pairingScoreInfos[1].TotalHolesWon {
 		matchupScoreInfo.LeaderPairingID = pairingScoreInfos[0].ID
-	} else if (pairingScoreInfos[0].TotalHolesWon < pairingScoreInfos[1].TotalHolesWon) {
+	} else if pairingScoreInfos[0].TotalHolesWon < pairingScoreInfos[1].TotalHolesWon {
 		matchupScoreInfo.LeaderPairingID = pairingScoreInfos[1].ID
 	}
 

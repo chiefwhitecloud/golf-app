@@ -6,14 +6,14 @@ import (
 )
 
 type score struct {
-	ID   int
-  HoleID int
-  Pairing1ID int
-  Pairing2ID int
-  MatchupID int
-  Pairing1Strokes int
-  Pairing2Strokes int
-	HoleNumber int
+	ID              int
+	HoleID          int
+	Pairing1ID      int
+	Pairing2ID      int
+	MatchupID       int
+	Pairing1Strokes int
+	Pairing2Strokes int
+	HoleNumber      int
 }
 
 func (s *score) createScore(db *sql.DB) error {
@@ -46,46 +46,45 @@ func getScoresForMatchup(db *sql.DB, matchupId int) ([]score, error) {
 				on s.hole_id = h.id
     WHERE
     	s.matchup_id = $1;`,
-    matchupId)
+		matchupId)
 
-  if err != nil {
-      return nil, err
-  }
+	if err != nil {
+		return nil, err
+	}
 
-  defer rows.Close()
+	defer rows.Close()
 
-  scores := []score{}
+	scores := []score{}
 
-  for rows.Next() {
-      var s score
-      if err := rows.Scan(&s.ID,
-				&s.HoleID,
-				&s.HoleNumber,
-				&s.Pairing1ID,
-				&s.Pairing1Strokes,
-				&s.Pairing1ID,
-				&s.Pairing2Strokes,
-			); err != nil {
-          return nil, err
-      }
-      scores = append(scores, s)
-  }
+	for rows.Next() {
+		var s score
+		if err := rows.Scan(&s.ID,
+			&s.HoleID,
+			&s.HoleNumber,
+			&s.Pairing1ID,
+			&s.Pairing1Strokes,
+			&s.Pairing1ID,
+			&s.Pairing2Strokes,
+		); err != nil {
+			return nil, err
+		}
+		scores = append(scores, s)
+	}
 
-  return scores, nil
+	return scores, nil
 }
-
 
 func getTotalHolesWonByPairing(pairingId int, scoresForMatchup []score) int {
 
 	holesWon := 0
 
 	for i := 0; i < len(scoresForMatchup); i++ {
-		if (pairingId == scoresForMatchup[i].Pairing1ID){
-			if (scoresForMatchup[i].Pairing1Strokes < scoresForMatchup[i].Pairing2Strokes){
+		if pairingId == scoresForMatchup[i].Pairing1ID {
+			if scoresForMatchup[i].Pairing1Strokes < scoresForMatchup[i].Pairing2Strokes {
 				holesWon++
 			}
-		} else if (pairingId == scoresForMatchup[i].Pairing2ID) {
-			if (scoresForMatchup[i].Pairing2Strokes < scoresForMatchup[i].Pairing1Strokes){
+		} else if pairingId == scoresForMatchup[i].Pairing2ID {
+			if scoresForMatchup[i].Pairing2Strokes < scoresForMatchup[i].Pairing1Strokes {
 				holesWon++
 			}
 		}
@@ -99,8 +98,8 @@ func getHoleLastPlayedForMatchup(matchupId int, scoresForMatchup []score) int {
 	lastHolePlayed := 0
 
 	for i := 0; i < len(scoresForMatchup); i++ {
-		if (scoresForMatchup[i].MatchupID == matchupId){
-			if (scoresForMatchup[i].HoleNumber > lastHolePlayed){
+		if scoresForMatchup[i].MatchupID == matchupId {
+			if scoresForMatchup[i].HoleNumber > lastHolePlayed {
 				lastHolePlayed = scoresForMatchup[i].HoleNumber
 			}
 		}

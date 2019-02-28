@@ -4,11 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/chiefwhitecloud/golf-app/service"
+	"github.com/tidwall/gjson"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-	"github.com/tidwall/gjson"
 )
 
 var a service.App
@@ -52,18 +52,18 @@ func TestSimpleScoresheet(t *testing.T) {
 	response := executeRequest(req)
 
 	req, _ = http.NewRequest("GET", "/feeds/default/scoresheet", nil)
-  response = executeRequest(req)
+	response = executeRequest(req)
 
 	json := response.Body.String()
 	captainIdent := gjson.Get(json, "captainIdent")
 
 	if !captainIdent.Exists() {
-    t.Errorf("Expected captainIdent key to exist")
-  }
+		t.Errorf("Expected captainIdent key to exist")
+	}
 
 	if !captainIdent.Map()["1"].Exists() {
-    t.Errorf("Expected captain 1 key to exist")
-  }
+		t.Errorf("Expected captain 1 key to exist")
+	}
 
 	if !captainIdent.Map()["2"].Exists() {
 		t.Errorf("Expected captain 2 key to exist")
@@ -83,14 +83,13 @@ func TestSimpleScoresheet(t *testing.T) {
 	scoresheet := gjson.Get(json, "scoresheet")
 
 	if !scoresheet.Exists() {
-    t.Errorf("Expected scoresheet key to exist")
-  }
-
+		t.Errorf("Expected scoresheet key to exist")
+	}
 
 	totalNumOfHoles := gjson.Get(json, "scoresheet.totalNumOfHoles")
 	if !totalNumOfHoles.Exists() {
-    t.Errorf("Expected scoresheet.totalNumOfHoles key to exist")
-  }
+		t.Errorf("Expected scoresheet.totalNumOfHoles key to exist")
+	}
 	if gjson.Get(json, "scoresheet.totalNumOfHoles").Int() != 3 {
 		t.Errorf("Expected scoresheet.totalNumOfHoles to be 3")
 	}
@@ -108,8 +107,8 @@ func TestSimpleScoresheet(t *testing.T) {
 
 	numOfHolesRemaining := gjson.Get(json, "scoresheet.numOfHolesRemaining")
 	if !numOfHolesRemaining.Exists() {
-    t.Errorf("Expected scoresheet.numOfHolesRemaining key to exist")
-  }
+		t.Errorf("Expected scoresheet.numOfHolesRemaining key to exist")
+	}
 	if gjson.Get(json, "scoresheet.numOfHolesRemaining").Int() != 3 {
 		t.Errorf("Expected scoresheet.numOfHolesRemaining to be 3")
 	}
@@ -117,48 +116,48 @@ func TestSimpleScoresheet(t *testing.T) {
 	matchups := gjson.Get(json, "scoresheet.matchups")
 
 	if !matchups.Exists() {
-    t.Errorf("Expected scoresheet.matchups key to exist")
-  }
+		t.Errorf("Expected scoresheet.matchups key to exist")
+	}
 
 	if gjson.Get(json, "scoresheet.matchups.#").Int() != 1 {
-    t.Errorf("Expected scoresheet.matchups length to be 1")
-  }
+		t.Errorf("Expected scoresheet.matchups length to be 1")
+	}
 
 	if gjson.Get(json, "scoresheet.matchups.0.name").String() != "Group 1" {
-    t.Errorf("Expected scoresheet.matchups name to be Group 1")
-  }
+		t.Errorf("Expected scoresheet.matchups name to be Group 1")
+	}
 
 	if gjson.Get(json, "scoresheet.matchups.0.holeNumberLastPlayed").Int() != 0 {
 		t.Errorf("Expected scoresheet.matchups.0.holeNumberLastPlayed to be 0")
 	}
 
 	if gjson.Get(json, "scoresheet.matchups.0.pairings.#").Int() != 2 {
-    t.Errorf("Expected scoresheet.matchups.0.pairings length to be 2")
-  }
+		t.Errorf("Expected scoresheet.matchups.0.pairings length to be 2")
+	}
 
-	pairingExistsValidation := map[string]bool {
-    "White / Campbell": false,
-    "Drover / Rogers": false,
+	pairingExistsValidation := map[string]bool{
+		"White / Campbell": false,
+		"Drover / Rogers":  false,
 	}
 
 	pairingNamesResult := gjson.Get(json, "scoresheet.matchups.0.pairings.#.name")
 	for _, name := range pairingNamesResult.Array() {
-		pairingExistsValidation[name.String()] = true;
+		pairingExistsValidation[name.String()] = true
 	}
 
 	for k, _ := range pairingExistsValidation {
-    if (pairingExistsValidation[k] == false){
+		if pairingExistsValidation[k] == false {
 			t.Errorf("Pairing not found")
 		}
 	}
 
 	if gjson.Get(json, "scoresheet.matchups.0.pairings.0.holesWon").Int() != 0 {
-    t.Errorf("Expected scoresheet.matchups.0.pairings.0.holesWon to be 0")
-  }
+		t.Errorf("Expected scoresheet.matchups.0.pairings.0.holesWon to be 0")
+	}
 
 	if gjson.Get(json, "scoresheet.matchups.0.pairings.1.holesWon").Int() != 0 {
-    t.Errorf("Expected scoresheet.matchups.0.pairings.1.holesWon to be 0")
-  }
+		t.Errorf("Expected scoresheet.matchups.0.pairings.1.holesWon to be 0")
+	}
 
 	var matchupArray = gjson.Get(json, "scoresheet.matchups").Array()
 
@@ -174,13 +173,13 @@ func TestSimpleScoresheet(t *testing.T) {
 	matchupSelfPath := gjson.Get(matchupArray[0].String(), "selfPath").String()
 
 	req, _ = http.NewRequest("GET", matchupSelfPath, nil)
-  response = executeRequest(req)
+	response = executeRequest(req)
 
 	json = response.Body.String()
 
 	if gjson.Get(json, "name").String() != "Group 1" {
-    t.Errorf("Expected name to be Group 1")
-  }
+		t.Errorf("Expected name to be Group 1")
+	}
 
 	var holesArray = gjson.Get(json, "holes").Array()
 
@@ -201,7 +200,6 @@ func TestSimpleScoresheet(t *testing.T) {
 		t.Errorf("The first hole par should be 4")
 	}
 
-
 }
 
 func createTables() {
@@ -220,8 +218,7 @@ func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 	return rr
 }
 
-const newGameJSON =
-`{
+const newGameJSON = `{
 	"match": {
 		"captains": ["chief", "madden"],
 		"course": {

@@ -45,6 +45,7 @@ func (a *App) Run(port string) {
 func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/import", a.handleCreateNewGame()).Methods("POST")
 	a.Router.HandleFunc("/feeds/default/scoresheet", a.handleGetScoresheet()).Methods("GET")
+	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{id}", a.handleGetMatchupScoresheet()).Methods("GET")
 }
 
 func (a *App) CreateTables() {

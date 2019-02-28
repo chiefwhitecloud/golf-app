@@ -34,45 +34,16 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 	holesWonByCaptainID := make(map[string]int)
 
 	for i := range matchups {
+		matchupScoreInfo, err := populateMatchupScoreInfo(db, matchups[i].Name, matchups[i].ID)
 
-		pairingsForMatchup, err := getPairingsForMatchup(db, matchups[i].ID);
-	  if err != nil {
-	    return scoresheet, err
-	  }
-
-		scoresForMatchup, err := getScoresForMatchup(db, matchups[i].ID);
-	  if err != nil {
-	    return scoresheet, err
-	  }
-
-		totalHolesPlayed += len(scoresForMatchup)
-
-		pairingScoreInfos := make([]api.PairingScoreInfo, len(pairingsForMatchup))
-
-		for x := range pairingsForMatchup {
-
-			totalHolesWon := getTotalHolesWonByPairing(pairingsForMatchup[x].ID, scoresForMatchup)
-
-			holesWonByCaptainID[strconv.Itoa(pairingsForMatchup[x].CaptainID)] += totalHolesWon
-
-			pairingScoreInfos[x] = api.PairingScoreInfo{
-				 ID: strconv.Itoa(pairingsForMatchup[x].ID),
-				 Name: fmt.Sprintf("%s / %s", pairingsForMatchup[x].Player1Name, pairingsForMatchup[x].Player2Name),
-				 CaptainID: strconv.Itoa(pairingsForMatchup[x].CaptainID),
-				 TotalHolesWon: totalHolesWon,
-			}
+		if err != nil {
+			return scoresheet, err
 		}
 
-		if (pairingScoreInfos[0].TotalHolesWon > pairingScoreInfos[1].TotalHolesWon){
-			matchupScoreInfos[i].LeaderPairingID = pairingScoreInfos[0].ID
-		} else if (pairingScoreInfos[0].TotalHolesWon < pairingScoreInfos[1].TotalHolesWon) {
-			matchupScoreInfos[i].LeaderPairingID = pairingScoreInfos[1].ID
-		}
-
-		matchupScoreInfos[i].Pairings = pairingScoreInfos
-		matchupScoreInfos[i].Name = matchups[i].Name
-		matchupScoreInfos[i].HoleNumberLastPlayed = getHoleLastPlayedForMatchup(matchups[i].ID, scoresForMatchup)
+		matchupScoreInfos[i] = matchupScoreInfo
 	}
+
+
 
 	holeCount, err := getHoleCount(db, gameId)
 	if err != nil {
@@ -93,5 +64,85 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 	scoresheet.CaptainsList = captainsList
 
   return scoresheet, nil;
+
+}
+
+//Populates the scoresheet for an individual matchup
+//The individual matchup scoresheet contains the hole score and information
+func PopulateMatchupScoresheet(db *sql.DB, matchupID int, gameId int) (api.MatchupScoreInfo, error) {
+
+	matchupScoreInfo := api.MatchupScoreInfo{}
+	matchup := matchup{ID: matchupID}
+
+	if err := matchup.getMatchup(db); err != nil {
+		return matchupScoreInfo, err
+	}
+
+	matchupScoreInfo, err := populateMatchupScoreInfo(db, matchup.Name, matchup.ID)
+	if err != nil {
+		return matchupScoreInfo, err
+	}
+
+	holes, err := getHoles(db, gameId);
+	if err := matchup.getMatchup(db); err != nil {
+		return matchupScoreInfo, err
+	}
+
+	holeInfos := make([]api.HoleInfo, len(holes))
+
+	for i := range holes {
+		holeInfos[i] = api.HoleInfo{
+			HoleNumber: holes[i].Number,
+			HoleYards: holes[i].Yards,
+			HolePar: holes[i].Par,
+		}
+	}
+
+	matchupScoreInfo.Holes = holeInfos
+
+	return matchupScoreInfo, nil
+
+}
+
+func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (api.MatchupScoreInfo, error) {
+
+	matchupScoreInfo := api.MatchupScoreInfo{}
+
+	pairingsForMatchup, err := getPairingsForMatchup(db, matchupID);
+	if err != nil {
+		return matchupScoreInfo, err
+	}
+
+	scoresForMatchup, err := getScoresForMatchup(db, matchupID);
+	if err != nil {
+		return matchupScoreInfo, err
+	}
+
+	pairingScoreInfos := make([]api.PairingScoreInfo, len(pairingsForMatchup))
+
+	for x := range pairingsForMatchup {
+
+		totalHolesWon := getTotalHolesWonByPairing(pairingsForMatchup[x].ID, scoresForMatchup)
+
+		pairingScoreInfos[x] = api.PairingScoreInfo{
+			 ID: strconv.Itoa(pairingsForMatchup[x].ID),
+			 Name: fmt.Sprintf("%s / %s", pairingsForMatchup[x].Player1Name, pairingsForMatchup[x].Player2Name),
+			 CaptainID: strconv.Itoa(pairingsForMatchup[x].CaptainID),
+			 TotalHolesWon: totalHolesWon,
+		}
+	}
+
+	if (pairingScoreInfos[0].TotalHolesWon > pairingScoreInfos[1].TotalHolesWon){
+		matchupScoreInfo.LeaderPairingID = pairingScoreInfos[0].ID
+	} else if (pairingScoreInfos[0].TotalHolesWon < pairingScoreInfos[1].TotalHolesWon) {
+		matchupScoreInfo.LeaderPairingID = pairingScoreInfos[1].ID
+	}
+
+	matchupScoreInfo.Pairings = pairingScoreInfos
+	matchupScoreInfo.Name = matchupName
+	matchupScoreInfo.HoleNumberLastPlayed = getHoleLastPlayedForMatchup(matchupID, scoresForMatchup)
+	matchupScoreInfo.SelfPath = fmt.Sprintf("/feeds/default/scoresheet/matchup/%d", matchupID)
+
+	return matchupScoreInfo, nil
 
 }

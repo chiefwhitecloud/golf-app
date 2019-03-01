@@ -177,27 +177,12 @@ func TestSimpleScoresheet(t *testing.T) {
 
 	json = response.Body.String()
 
-	if gjson.Get(json, "name").String() != "Group 1" {
+	if gjson.Get(json, "matchup.name").String() != "Group 1" {
 		t.Errorf("Expected name to be Group 1")
 	}
 
-	var holesArray = gjson.Get(json, "holes").Array()
-
-	if len(holesArray) != 3 {
-		t.Errorf("holes array should contain 3 elements")
-	}
-
-	holeOne := holesArray[0].String()
-	if gjson.Get(holeOne, "number").Int() != 1 {
-		t.Errorf("The first hole should be number 1")
-	}
-
-	if gjson.Get(holeOne, "yards").Int() != 345 {
-		t.Errorf("The first hole yards should be 345")
-	}
-
-	if gjson.Get(holeOne, "par").Int() != 4 {
-		t.Errorf("The first hole par should be 4")
+	if gjson.Get(json, "captainIdent").Exists() == false {
+		t.Errorf("Expected captainIdent to exist")
 	}
 
 }

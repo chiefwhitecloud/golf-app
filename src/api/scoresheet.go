@@ -26,11 +26,25 @@ type MatchupScoreInfo struct {
 	HoleNumberLastPlayed int                `json:"holeNumberLastPlayed"`
 	LeaderPairingID      string             `json:"LeaderPairingId"`
 	SelfPath             string             `json:"selfPath"`
-	Holes                []HoleInfo         `json:"holes,omitempty"`
+	ScoreDetailsPath     string         		`json:"ScoreDetailsPath"`
+	ID 									 int 
+}
+
+type ScoreDetailInfo struct {
+	HolesInfo            []HoleInfo 				`json:"holes"`
 }
 
 type CaptainScores struct {
 	TotalHolesWon int `json:"totalHolesWon"`
+}
+
+type MatchupScoreInfoResponse struct {
+	Matchup            MatchupScoreInfo       `json:"matchup"`
+	CaptainsIndent map[string]CaptainIndent `json:"captainIdent"`
+}
+
+type ScoreDetailsResponse struct {
+	ScoreDetail           ScoreDetailInfo       `json:"scoreDetail"`
 }
 
 type ScoreInfo struct {
@@ -46,5 +60,5 @@ type CaptainIndent struct {
 
 type Scoresheet struct {
 	Score        ScoreInfo                `json:"scoresheet"`
-	CaptainsList map[string]CaptainIndent `json:"captainIdent"`
+	CaptainsIndent map[string]CaptainIndent `json:"captainIdent"`
 }

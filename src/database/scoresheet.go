@@ -12,14 +12,9 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 
 	scoresheet := api.Scoresheet{}
 
-	captains, err := getCaptains(db, gameId)
+	captainsIdent, err := populateCaptainsIdentList(db, gameId)
 	if err != nil {
 		return scoresheet, err
-	}
-
-	captainsList := map[string]api.CaptainIndent{}
-	for i := range captains {
-		captainsList[strconv.Itoa(captains[i].ID)] = api.CaptainIndent{Name: captains[i].Name}
 	}
 
 	matchups, err := getMatchups(db, gameId)
@@ -59,7 +54,7 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 	scoreInfo.TotalNumOfHoles = holeCount
 	scoreInfo.NumOfHolesRemaining = holeCount - totalHolesPlayed
 	scoresheet.Score = scoreInfo
-	scoresheet.CaptainsList = captainsList
+	scoresheet.CaptainsIndent = captainsIdent
 
 	return scoresheet, nil
 
@@ -67,23 +62,47 @@ func PopulateScoresheet(db *sql.DB, gameId int) (api.Scoresheet, error) {
 
 //Populates the scoresheet for an individual matchup
 //The individual matchup scoresheet contains the hole score and information
-func PopulateMatchupScoresheet(db *sql.DB, matchupID int, gameId int) (api.MatchupScoreInfo, error) {
+func PopulateMatchupScoresheet(db *sql.DB, matchupID int) (api.MatchupScoreInfoResponse, error) {
+
+	matchupScoreInfoResponse := api.MatchupScoreInfoResponse{}
 
 	matchupScoreInfo := api.MatchupScoreInfo{}
 	matchup := matchup{ID: matchupID}
 
 	if err := matchup.getMatchup(db); err != nil {
-		return matchupScoreInfo, err
+		return matchupScoreInfoResponse, err
 	}
 
-	matchupScoreInfo, err := populateMatchupScoreInfo(db, matchup.Name, matchup.ID)
+	captainsIdent, err := populateCaptainsIdentList(db, matchup.GameID)
 	if err != nil {
-		return matchupScoreInfo, err
+		return matchupScoreInfoResponse, err
 	}
 
-	holes, err := getHoles(db, gameId)
+	matchupScoreInfo, err = populateMatchupScoreInfo(db, matchup.Name, matchup.ID)
+	if err != nil {
+		return matchupScoreInfoResponse, err
+	}
+
+	matchupScoreInfoResponse.Matchup = matchupScoreInfo
+	matchupScoreInfoResponse.CaptainsIndent = captainsIdent
+
+	return matchupScoreInfoResponse, nil
+}
+
+
+func PopulateMatchupScoreDetails(db *sql.DB, matchupID int) (api.ScoreDetailsResponse, error) {
+
+	scoreDetailsResponse := api.ScoreDetailsResponse{}
+
+	matchup := matchup{ID: matchupID}
+
 	if err := matchup.getMatchup(db); err != nil {
-		return matchupScoreInfo, err
+		return scoreDetailsResponse, err
+	}
+
+	holes, err := getHoles(db, matchup.GameID)
+	if err != nil {
+		return scoreDetailsResponse, err
 	}
 
 	holeInfos := make([]api.HoleInfo, len(holes))
@@ -96,12 +115,16 @@ func PopulateMatchupScoresheet(db *sql.DB, matchupID int, gameId int) (api.Match
 		}
 	}
 
-	matchupScoreInfo.Holes = holeInfos
+	scoreDetailInfo := api.ScoreDetailInfo{
+		HolesInfo: holeInfos,
+	}
+	scoreDetailsResponse.ScoreDetail = scoreDetailInfo
 
-	return matchupScoreInfo, nil
+	return scoreDetailsResponse, nil
 
 }
 
+//fill out the MatchupScoreInfo struct for the given matchupID
 func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (api.MatchupScoreInfo, error) {
 
 	matchupScoreInfo := api.MatchupScoreInfo{}
@@ -139,8 +162,24 @@ func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (ap
 	matchupScoreInfo.Pairings = pairingScoreInfos
 	matchupScoreInfo.Name = matchupName
 	matchupScoreInfo.HoleNumberLastPlayed = getHoleLastPlayedForMatchup(matchupID, scoresForMatchup)
-	matchupScoreInfo.SelfPath = fmt.Sprintf("/feeds/default/scoresheet/matchup/%d", matchupID)
-
+	matchupScoreInfo.ID = matchupID
+	
 	return matchupScoreInfo, nil
 
+}
+
+func populateCaptainsIdentList(db *sql.DB, gameId int) (map[string]api.CaptainIndent, error) {
+
+	captainsIdent := map[string]api.CaptainIndent{}
+
+	captains, err := getCaptains(db, gameId)
+	if err != nil {
+		return captainsIdent, err
+	}
+
+	for i := range captains {
+		captainsIdent[strconv.Itoa(captains[i].ID)] = api.CaptainIndent{Name: captains[i].Name}
+	}
+
+	return captainsIdent, nil
 }

@@ -19,8 +19,10 @@ func (a *App) handleGetScoresheet() http.HandlerFunc {
 		}
 
 		for i := 0; i < len(scoreSheetResult.Score.Matchups); i++ {
-			scoreSheetResult.Score.Matchups[i].SelfPath = fmt.Sprintf("http://%s%s",
-				r.Host, scoreSheetResult.Score.Matchups[i].SelfPath)
+			scoreSheetResult.Score.Matchups[i].SelfPath = fmt.Sprintf("http://%s/feeds/default/scoresheet/matchup/%d",
+				r.Host, scoreSheetResult.Score.Matchups[i].ID)
+			scoreSheetResult.Score.Matchups[i].ScoreDetailsPath = fmt.Sprintf("http://%s/feeds/default/scoresheet/matchup/%d/scoredetails",
+				r.Host, scoreSheetResult.Score.Matchups[i].ID)
 		}
 
 		respondWithJSON(w, http.StatusOK, scoreSheetResult)
@@ -32,16 +34,21 @@ func (a *App) handleGetMatchupScoresheet() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var matchupScoreInfo api.MatchupScoreInfo
+		var matchupScoreInfoResponse api.MatchupScoreInfoResponse
 
-		matchupScoreInfo, err := database.PopulateMatchupScoresheet(a.DB, 1, 1)
+		matchupScoreInfoResponse, err := database.PopulateMatchupScoresheet(a.DB, 1)
 		if err != nil {
 			http.Error(w, "Failed to create game", http.StatusInternalServerError)
 			log.Println(err.Error())
 			return
 		}
 
-		respondWithJSON(w, http.StatusOK, matchupScoreInfo)
+		matchupScoreInfoResponse.Matchup.SelfPath = fmt.Sprintf("http://%s/feeds/default/scoresheet/matchup/%d",
+			r.Host, matchupScoreInfoResponse.Matchup.ID)
+		matchupScoreInfoResponse.Matchup.ScoreDetailsPath = fmt.Sprintf("http://%s/feeds/default/scoresheet/matchup/%d/scoredetails",
+			r.Host, matchupScoreInfoResponse.Matchup.ID)
+
+		respondWithJSON(w, http.StatusOK, matchupScoreInfoResponse)
 
 	}
 }

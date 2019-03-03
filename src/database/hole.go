@@ -25,6 +25,27 @@ func (h *hole) createHole(db *sql.DB) error {
 	return nil
 }
 
+func (h *hole) getHole(db *sql.DB) error {
+
+	row := db.QueryRow(`
+		SELECT h.id,
+			h.number,
+			h.par,
+			h.yards,
+			h.course_id
+		FROM hole h
+		WHERE
+			h.id = $1;`,
+		h.ID)
+
+	if err := row.Scan(&h.ID, &h.Number, &h.Par, &h.Yards, &h.CourseID); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//get all holes in the game
 func getHoles(db *sql.DB, gameId int) ([]hole, error) {
 	rows, err := db.Query(`
 		SELECT h.id, h.number, h.par, h.yards, h.course_id

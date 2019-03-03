@@ -45,7 +45,9 @@ func (a *App) Run(port string) {
 func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/import", a.handleCreateNewGame()).Methods("POST")
 	a.Router.HandleFunc("/feeds/default/scoresheet", a.handleGetScoresheet()).Methods("GET")
-	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{id}", a.handleGetMatchupScoresheet()).Methods("GET")
+	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{matchup_id}", a.handleGetMatchupScoresheet()).Methods("GET")
+	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{matchup_id}/scoredetail", a.handleGetMatchupScoreDetail()).Methods("GET")
+	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{matchup_id}/scoredetail/{hole_id}", a.handleSaveScoreDetail()).Methods("PUT")
 }
 
 func (a *App) CreateTables() {

@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/chiefwhitecloud/golf-app/api"
 	_ "github.com/lib/pq"
@@ -89,26 +90,26 @@ func PopulateMatchupScoresheet(db *sql.DB, matchupID int) (api.MatchupScoreInfoR
 	return matchupScoreInfoResponse, nil
 }
 
+func PopulateMatchupScoreDetail(db *sql.DB, matchupID int) (api.ScoreDetailResponse, error) {
 
-func PopulateMatchupScoreDetails(db *sql.DB, matchupID int) (api.ScoreDetailsResponse, error) {
-
-	scoreDetailsResponse := api.ScoreDetailsResponse{}
+	scoreDetailResponse := api.ScoreDetailResponse{}
 
 	matchup := matchup{ID: matchupID}
 
 	if err := matchup.getMatchup(db); err != nil {
-		return scoreDetailsResponse, err
+		return scoreDetailResponse, err
 	}
 
 	holes, err := getHoles(db, matchup.GameID)
 	if err != nil {
-		return scoreDetailsResponse, err
+		return scoreDetailResponse, err
 	}
 
 	holeInfos := make([]api.HoleInfo, len(holes))
 
 	for i := range holes {
 		holeInfos[i] = api.HoleInfo{
+			ID:         holes[i].ID,
 			HoleNumber: holes[i].Number,
 			HoleYards:  holes[i].Yards,
 			HolePar:    holes[i].Par,
@@ -118,10 +119,80 @@ func PopulateMatchupScoreDetails(db *sql.DB, matchupID int) (api.ScoreDetailsRes
 	scoreDetailInfo := api.ScoreDetailInfo{
 		HolesInfo: holeInfos,
 	}
-	scoreDetailsResponse.ScoreDetail = scoreDetailInfo
+	scoreDetailResponse.ScoreDetail = scoreDetailInfo
 
-	return scoreDetailsResponse, nil
+	return scoreDetailResponse, nil
 
+}
+
+func SaveScoreDetail(db *sql.DB, holeId int, matchupId int, scores []api.HoleScoreInfo) error {
+
+	h := hole{ID: holeId}
+	err := h.getHole(db)
+	if err != nil {
+		return err
+	}
+
+	matchup := matchup{ID: matchupId}
+	if err := matchup.getMatchup(db); err != nil {
+		return err
+	}
+
+	pairingsForMatchup, err := GetPairingsForMatchup(db, matchup.ID)
+	if err != nil {
+		return err
+	}
+
+	var pairing1Id int
+	var pairing2Id int
+
+	for x := range pairingsForMatchup {
+		if pairingsForMatchup[x].isFirstPairingInMatchup {
+			pairing1Id = pairingsForMatchup[x].ID
+		} else {
+			pairing2Id = pairingsForMatchup[x].ID
+		}
+	}
+
+	var pairing1Score int
+	var pairing2Score int
+
+	for x := range scores {
+		s, err := strconv.Atoi(scores[x].PairingID)
+		if err != nil {
+			return err
+		}
+		if s == pairing1Id {
+			pairing1Score = scores[x].Score
+		} else if s == pairing2Id {
+			pairing2Score = scores[x].Score
+		}
+	}
+
+	if pairing1Score == 0 {
+		return errors.New("Pairing1Score not correct")
+	}
+
+	if pairing2Score == 0 {
+		return errors.New("Pairing2Score not correct")
+	}
+
+	s := score{
+		HoleID:        h.ID,
+		Pairing1ID:    pairing1Id,
+		Pairing2ID:    pairing2Id,
+		Pairing1Score: pairing1Score,
+		Pairing2Score: pairing2Score,
+		MatchupID:     matchup.ID,
+		HoleNumber:    h.Number,
+	}
+
+	err = s.saveScore(db)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //fill out the MatchupScoreInfo struct for the given matchupID
@@ -129,7 +200,7 @@ func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (ap
 
 	matchupScoreInfo := api.MatchupScoreInfo{}
 
-	pairingsForMatchup, err := getPairingsForMatchup(db, matchupID)
+	pairingsForMatchup, err := GetPairingsForMatchup(db, matchupID)
 	if err != nil {
 		return matchupScoreInfo, err
 	}
@@ -163,7 +234,7 @@ func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (ap
 	matchupScoreInfo.Name = matchupName
 	matchupScoreInfo.HoleNumberLastPlayed = getHoleLastPlayedForMatchup(matchupID, scoresForMatchup)
 	matchupScoreInfo.ID = matchupID
-	
+
 	return matchupScoreInfo, nil
 
 }

@@ -75,9 +75,9 @@ CREATE TABLE score (
  id serial PRIMARY KEY,
  hole_id INT REFERENCES hole(id),
  pairing1_id INT REFERENCES pairing(id),
- pairing1_strokes INT,
+ pairing1_score INT,
  pairing2_id INT REFERENCES pairing(id),
- pairing2_strokes INT,
+ pairing2_score INT,
  matchup_id INT REFERENCES matchup(id)
 );
 

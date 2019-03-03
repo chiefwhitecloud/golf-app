@@ -2,17 +2,19 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	_ "github.com/lib/pq"
 )
 
 type pairing struct {
-	ID          int
-	Player1ID   int
-	Player2ID   int
-	CaptainID   int
-	MatchupID   int
-	Player1Name string
-	Player2Name string
+	ID                      int
+	Player1ID               int
+	Player2ID               int
+	CaptainID               int
+	MatchupID               int
+	Player1Name             string
+	Player2Name             string
+	isFirstPairingInMatchup bool
 }
 
 func (p *pairing) createPairing(db *sql.DB) error {
@@ -27,7 +29,7 @@ func (p *pairing) createPairing(db *sql.DB) error {
 	return nil
 }
 
-func getPairingsForMatchup(db *sql.DB, matchupId int) ([]pairing, error) {
+func GetPairingsForMatchup(db *sql.DB, matchupId int) ([]pairing, error) {
 	rows, err := db.Query(`
 		SELECT p.id pairing_id,
 			pl1.id player1_id,
@@ -43,7 +45,8 @@ func getPairingsForMatchup(db *sql.DB, matchupId int) ([]pairing, error) {
     	inner join player pl2
     		on pl2.id = p.player2_id
     	WHERE
-    		m.id = $1;`,
+    		m.id = $1
+			ORDER BY pairing_id ASC;`,
 		matchupId)
 
 	if err != nil {
@@ -61,6 +64,14 @@ func getPairingsForMatchup(db *sql.DB, matchupId int) ([]pairing, error) {
 		}
 		pairings = append(pairings, p)
 	}
+
+	if len(pairings) != 2 {
+		return pairings, errors.New("There should be only 2 pairings per matchup")
+	}
+
+	//need to know with pairing is first for the scores table
+	pairings[0].isFirstPairingInMatchup = true
+	pairings[1].isFirstPairingInMatchup = false
 
 	return pairings, nil
 }

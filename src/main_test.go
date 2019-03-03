@@ -185,6 +185,30 @@ func TestSimpleScoresheet(t *testing.T) {
 		t.Errorf("Expected captainIdent to exist")
 	}
 
+	if !gjson.Get(json, "matchup.scoreDetailsPath").Exists() {
+		t.Errorf("Expected scoreDetailsPath to exist")
+	}
+
+	scoreDetailsPath := gjson.Get(json, "matchup.scoreDetailsPath").String()
+
+	req, _ = http.NewRequest("GET", scoreDetailsPath, nil)
+	response = executeRequest(req)
+
+	json = response.Body.String()
+
+	if !gjson.Get(json, "scoreDetail.holes").Exists() {
+		t.Errorf("Expected scoreDetails.holes to exist")
+	}
+
+	var holesArray = gjson.Get(json, "scoreDetail.holes").Array()
+
+	if len(holesArray) != 3 {
+		t.Errorf("holes array should contain 3 holes")
+	}
+
+	hole1 := gjson.Get(holesArray[0].String(), "selfPath").String()
+	t.Log(hole1)
+
 }
 
 func createTables() {

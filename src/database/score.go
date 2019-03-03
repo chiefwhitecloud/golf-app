@@ -6,29 +6,59 @@ import (
 )
 
 type score struct {
-	ID              int
-	HoleID          int
-	Pairing1ID      int
-	Pairing2ID      int
-	MatchupID       int
-	Pairing1Strokes int
-	Pairing2Strokes int
-	HoleNumber      int
+	ID            int
+	HoleID        int
+	Pairing1ID    int
+	Pairing2ID    int
+	MatchupID     int
+	Pairing1Score int
+	Pairing2Score int
+	HoleNumber    int
 }
 
-func (s *score) createScore(db *sql.DB) error {
-	err := db.QueryRow(
-		`INSERT INTO score
-    (hole_id, pairing1_id, pairing1_strokes, pairing2_id, pairing2_strokes, matchup_id)
-    VALUES($1, $2, $3, $4, $5, $6)
-    RETURNING id`,
-		s.HoleID, s.Pairing1ID, s.Pairing1Strokes, s.Pairing2ID, s.Pairing2Strokes, s.MatchupID).Scan(&s.ID)
+func (s *score) saveScore(db *sql.DB) error {
 
-	if err != nil {
-		return err
+	row := db.QueryRow(`
+		SELECT s.id
+		FROM score
+  	WHERE
+			s.matchup_id = $1;
+			AND s.hole_id = $2;`,
+		s.MatchupID, s.HoleID)
+
+	if err := row.Scan(&s.ID); err != nil {
+		if err != sql.ErrNoRows {
+			return err
+		}
+	}
+
+	if s.ID == 0 {
+		//update
+		_, err := db.Exec(
+			`UPDATE score
+			SET pairing1_score = $1, pairing2_score = $2
+	    WHERE id = $1`,
+			s.Pairing1Score, s.Pairing2Score, s.ID)
+
+		if err != nil {
+			return err
+		}
+	} else {
+		//insert
+		err := db.QueryRow(
+			`INSERT INTO score
+	    (hole_id, pairing1_id, pairing1_score, pairing2_id, pairing2_score, matchup_id)
+	    VALUES($1, $2, $3, $4, $5, $6)
+	    RETURNING id`,
+			s.HoleID, s.Pairing1ID, s.Pairing1Score, s.Pairing2ID, s.Pairing2Score, s.MatchupID).Scan(&s.ID)
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
+
 }
 
 func getScoresForMatchup(db *sql.DB, matchupId int) ([]score, error) {
@@ -38,9 +68,9 @@ func getScoresForMatchup(db *sql.DB, matchupId int) ([]score, error) {
 			s.hole_id,
 			h.number,
 			s.pairing1_id,
-      s.pairing1_strokes,
+      s.pairing1_score,
 			s.pairing2_id,
-      s.pairing2_strokes
+      s.pairing2_score
 		FROM score s
 			inner join hole h
 				on s.hole_id = h.id
@@ -62,9 +92,9 @@ func getScoresForMatchup(db *sql.DB, matchupId int) ([]score, error) {
 			&s.HoleID,
 			&s.HoleNumber,
 			&s.Pairing1ID,
-			&s.Pairing1Strokes,
+			&s.Pairing1Score,
 			&s.Pairing1ID,
-			&s.Pairing2Strokes,
+			&s.Pairing2Score,
 		); err != nil {
 			return nil, err
 		}
@@ -80,11 +110,11 @@ func getTotalHolesWonByPairing(pairingId int, scoresForMatchup []score) int {
 
 	for i := 0; i < len(scoresForMatchup); i++ {
 		if pairingId == scoresForMatchup[i].Pairing1ID {
-			if scoresForMatchup[i].Pairing1Strokes < scoresForMatchup[i].Pairing2Strokes {
+			if scoresForMatchup[i].Pairing1Score < scoresForMatchup[i].Pairing2Score {
 				holesWon++
 			}
 		} else if pairingId == scoresForMatchup[i].Pairing2ID {
-			if scoresForMatchup[i].Pairing2Strokes < scoresForMatchup[i].Pairing1Strokes {
+			if scoresForMatchup[i].Pairing2Score < scoresForMatchup[i].Pairing1Score {
 				holesWon++
 			}
 		}

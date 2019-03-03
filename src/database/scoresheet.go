@@ -205,10 +205,14 @@ func populateMatchupScoreInfo(db *sql.DB, matchupName string, matchupID int) (ap
 		return matchupScoreInfo, err
 	}
 
+	//log.Print(pairingsForMatchup)
+
 	scoresForMatchup, err := getScoresForMatchup(db, matchupID)
 	if err != nil {
 		return matchupScoreInfo, err
 	}
+
+	//log.Print(scoresForMatchup)
 
 	pairingScoreInfos := make([]api.PairingScoreInfo, len(pairingsForMatchup))
 

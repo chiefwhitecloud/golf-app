@@ -20,9 +20,9 @@ func (s *score) saveScore(db *sql.DB) error {
 
 	row := db.QueryRow(`
 		SELECT s.id
-		FROM score
+		FROM score s
   	WHERE
-			s.matchup_id = $1;
+			s.matchup_id = $1
 			AND s.hole_id = $2;`,
 		s.MatchupID, s.HoleID)
 
@@ -32,12 +32,12 @@ func (s *score) saveScore(db *sql.DB) error {
 		}
 	}
 
-	if s.ID == 0 {
+	if s.ID != 0 {
 		//update
 		_, err := db.Exec(
 			`UPDATE score
 			SET pairing1_score = $1, pairing2_score = $2
-	    WHERE id = $1`,
+	    WHERE id = $3`,
 			s.Pairing1Score, s.Pairing2Score, s.ID)
 
 		if err != nil {
@@ -88,7 +88,8 @@ func getScoresForMatchup(db *sql.DB, matchupId int) ([]score, error) {
 
 	for rows.Next() {
 		var s score
-		if err := rows.Scan(&s.ID,
+		if err := rows.Scan(
+			&s.ID,
 			&s.HoleID,
 			&s.HoleNumber,
 			&s.Pairing1ID,
@@ -98,6 +99,7 @@ func getScoresForMatchup(db *sql.DB, matchupId int) ([]score, error) {
 		); err != nil {
 			return nil, err
 		}
+		s.MatchupID = matchupId
 		scores = append(scores, s)
 	}
 

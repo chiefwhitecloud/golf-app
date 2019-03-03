@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"strings"
 )
 
 var a service.App
@@ -50,9 +51,11 @@ func TestSimpleScoresheet(t *testing.T) {
 	req, _ := http.NewRequest("POST", "/import", bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
 	response := executeRequest(req)
+	checkResponseCode(t, http.StatusCreated, response.Code)
 
 	req, _ = http.NewRequest("GET", "/feeds/default/scoresheet", nil)
 	response = executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
 
 	json := response.Body.String()
 	captainIdent := gjson.Get(json, "captainIdent")
@@ -174,6 +177,7 @@ func TestSimpleScoresheet(t *testing.T) {
 
 	req, _ = http.NewRequest("GET", matchupSelfPath, nil)
 	response = executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
 
 	json = response.Body.String()
 
@@ -193,6 +197,7 @@ func TestSimpleScoresheet(t *testing.T) {
 
 	req, _ = http.NewRequest("GET", scoreDetailsPath, nil)
 	response = executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
 
 	json = response.Body.String()
 
@@ -203,11 +208,34 @@ func TestSimpleScoresheet(t *testing.T) {
 	var holesArray = gjson.Get(json, "scoreDetail.holes").Array()
 
 	if len(holesArray) != 3 {
-		t.Errorf("holes array should contain 3 holes")
+		t.Errorf("score details holes property should contain 3 holes")
 	}
 
-	hole1 := gjson.Get(holesArray[0].String(), "selfPath").String()
-	t.Log(hole1)
+	hole1DetailSelfPath := gjson.Get(holesArray[0].String(), "selfPath").String()
+	t.Log(hole1DetailSelfPath)
+
+	req, _ = http.NewRequest("PUT", hole1DetailSelfPath, strings.NewReader(`
+		{
+			"scores":
+				[{
+						"pairingId": "1",
+						"score": 4
+					},
+					{
+						"pairingId": "2",
+						"score": 5
+					}
+				]
+		}`))
+	req.Header.Set("Content-Type", "application/json")
+
+	response = executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
+	req, _ = http.NewRequest("GET", "/feeds/default/scoresheet", nil)
+	response = executeRequest(req)
+	checkResponseCode(t, http.StatusOK, response.Code)
+
 
 }
 

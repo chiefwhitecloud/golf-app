@@ -33,7 +33,7 @@ type MatchupScoreInfo struct {
 	LeaderPairingID      string             `json:"LeaderPairingId"`
 	SelfPath             string             `json:"selfPath"`
 	ScoreDetailsPath     string             `json:"scoreDetailsPath"`
-	ID                   int
+	ID                   int								`json:"-"`
 }
 
 type ScoreDetailInfo struct {

@@ -93,6 +93,12 @@ func (a *App) handleSaveScoreDetail() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
+		contentTypeHeader := r.Header.Get("Content-Type")
+		if contentTypeHeader != "application/json" {
+			http.Error(w, "Invalid Request", http.StatusBadRequest)
+			return
+		}
+
 		vars := mux.Vars(r)
 
 		matchupId, err := strconv.Atoi(vars["matchup_id"])
@@ -129,10 +135,12 @@ func (a *App) handleSaveScoreDetail() http.HandlerFunc {
 
 		err = database.SaveScoreDetail(a.DB, holeId, matchupId, scores)
 		if err != nil {
+			log.Print(err.Error())
 			http.Error(w, "Failed to save score", http.StatusInternalServerError)
-			log.Println(err.Error())
 			return
 		}
+
+		respondWithStatus(w, 200)
 
 	}
 

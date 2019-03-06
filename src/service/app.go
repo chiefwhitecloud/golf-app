@@ -48,6 +48,7 @@ func (a *App) initializeRoutes() {
 	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{matchup_id}", a.handleGetMatchupScoresheet()).Methods("GET")
 	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{matchup_id}/scoredetail", a.handleGetMatchupScoreDetail()).Methods("GET")
 	a.Router.HandleFunc("/feeds/default/scoresheet/matchup/{matchup_id}/scoredetail/{hole_id}", a.handleSaveScoreDetail()).Methods("PUT")
+	a.Router.PathPrefix("/").Handler(a.handleHtmlRequest())
 }
 
 func (a *App) CreateTables() {

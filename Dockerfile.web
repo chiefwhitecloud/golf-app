@@ -1,0 +1,17 @@
+FROM golang:1.11-alpine
+
+RUN apk add bash ca-certificates git gcc g++ libc-dev
+WORKDIR /app
+
+ENV GO111MODULE=on
+
+COPY ./src/backend/go.mod .
+COPY ./src/backend/go.sum .
+
+RUN go mod download
+
+COPY ./src/backend /app
+
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /bin/app
+
+CMD ["/bin/app"]

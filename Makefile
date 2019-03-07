@@ -14,8 +14,14 @@ down:
 
 test:
 	docker-compose run web go test -v -cover ./...
-	
+
 clean: down
 	@echo "=============cleaning up============="
 	docker system prune -f
 	docker volume prune -f
+
+build-frontend-image:
+	docker build -f Dockerfile.frontend -t chiefwhitecloud/golf-app-frontend:latest .
+
+build-frontend-bundle:
+	docker run --rm -it -v `pwd`/src/frontend:/app chiefwhitecloud/golf-app-frontend:latest

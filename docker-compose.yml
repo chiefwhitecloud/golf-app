@@ -19,8 +19,9 @@ services:
   web:
     build:
       context: .
+      dockerfile: Dockerfile.web
     volumes:
-     - ./src:/app
+     - ./src/backend:/app
     environment:
      - PORT=${PORT}
      - POSTGRES_HOST=db

@@ -1,0 +1,16 @@
+FROM node:carbon
+
+# Create app directory
+WORKDIR /app
+
+RUN npm install --global rollup
+
+# Install app dependencies
+COPY ./src/frontend/package*.json ./
+
+RUN npm install
+
+# Bundle app source
+COPY ./src/frontend /app
+
+CMD [ "npm", "run", "build" ]

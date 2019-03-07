@@ -13,3 +13,5 @@
 
 # application environment settings
 .env
+
+./src/frontend/dist

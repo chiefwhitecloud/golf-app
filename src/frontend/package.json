@@ -1,0 +1,18 @@
+{
+  "name": "golf-app-frontend",
+  "version": "0.0.1",
+  "description": "Front-end for golf application",
+  "main": "main.js",
+  "scripts": {
+    "build": "rollup scripts/main.js --file dist/bundle.js --format iife"
+  },
+  "dependencies": {
+    "express": "^4.13.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chiefwhitecloud/golf-app"
+  },
+  "author": "Robert White",
+  "license": "MIT"
+}
